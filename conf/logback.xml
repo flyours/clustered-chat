@@ -1,28 +1,55 @@
 <configuration>
-    
-  <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
 
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%coloredLevel - %logger - %message%n%xException</pattern>
-    </encoder>
-  </appender>
+    <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel"/>
 
-  <!--
-    The logger name is typically the Java/Scala package name.
-    This configures the log level to log at for a package and its children packages.
-  -->
-  <logger name="play" level="INFO" />
-  <logger name="application" level="DEBUG" />
-  <logger name="akka" level="DEBUG" />
-  <logger name="actors" level="DEBUG" />
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- encoder defaults to ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
+        <encoder>
+            <pattern>
+                [ %-5level] [%date{yyyy-MM-dd HH:mm:ss.SSS}] [%t : %X{sourceThread}] [%X{akkaSource}] %logger{96}.%method\(\) - %msg%n%xException
+            </pattern>
+            <charset>UTF-8</charset>
+        </encoder>
 
-  <logger name="akka.remote" level="WARN" />
-  <logger name="akka.cluster" level="WARN" />
-  <logger name="akka.serialization" level="WARN" />
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/tmp/logs/play-akka-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 64 MB -->
+                <maxFileSize>64 MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
 
-  <root level="ERROR">
-    <appender-ref ref="STDOUT" />
-  </root>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <!-- Safely log to the same file from multiple JVMs. Degrades performance! -->
+        <prudent>true</prudent>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%coloredLevel [%date{yyyy-MM-dd HH:mm:ss.SSS}] [%t : %X{sourceThread}] [%X{akkaSource}] %logger{96}.%method\(\) - %msg%n%xException
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!--
+      The logger name is typically the Java/Scala package name.
+      This configures the log level to log at for a package and its children packages.
+    -->
+    <logger name="play" level="DEBUG"/>
+    <logger name="application" level="DEBUG"/>
+    <logger name="akka" level="DEBUG"/>
+    <logger name="actors" level="DEBUG"/>
+
+    <logger name="akka.remote" level="DEBUG"/>
+    <logger name="akka.cluster" level="DEBUG"/>
+    <logger name="akka.serialization" level="DEBUG"/>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
 
 </configuration>
